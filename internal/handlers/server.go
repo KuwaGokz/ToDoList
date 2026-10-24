@@ -1,0 +1,39 @@
+package handlers
+
+import (
+	"log"
+	"net/http"
+	"sync"
+)
+
+type Task struct {
+	Title   string `json:"title"`
+	Message string `json:"message"`
+	Status  bool   `json:"status"`
+	ID      int    `json:"id"`
+}
+
+type TaskStatus struct {
+	Status bool `json:"status"`
+}
+
+var Tasks = []Task{}
+var mu sync.Mutex
+var nextID = 1
+
+func Server() {
+	mux := http.NewServeMux()
+
+	server := &http.Server{
+		Handler: mux,
+		Addr:    "127.0.0.1:8080",
+	}
+
+	mux.HandleFunc("/", BasicPage)
+	mux.HandleFunc("GET /tasks", GetTask)
+	mux.HandleFunc("POST /tasks", CreateTask)
+	mux.HandleFunc("PATCH /tasks/{id}", ReworkTask)
+	mux.HandleFunc("DELETE /tasks/{id}", DelTask)
+
+	log.Fatal(server.ListenAndServe())
+}

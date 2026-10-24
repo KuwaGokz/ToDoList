@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Задачи</title>
+  <style>
+    body { font-family: sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+    input { display: block; width: 100%; padding: 8px; margin-bottom: 8px; box-sizing: border-box; }
+    li { margin: 10px 0; }
+    .done .title { text-decoration: line-through; color: gray; }
+    .message { color: gray; font-size: 0.9em; margin-left: 24px; }
+    #error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Задачи</h1>
+
+  <input id="title" placeholder="Название">
+  <input id="message" placeholder="Описание (необязательно)">
+  <button id="add">Добавить</button>
+  <p id="error"></p>
+
+  <ul id="list"></ul>
+
+  <script>
+    // Сервер должен уметь:
+    //   GET    /tasks       -> [{"id":1,"title":"..","message":"..","status":false}]
+    //   POST   /tasks       тело {"title":"..","message":".."}
+    //   PATCH  /tasks/{id}  тело {"status":true}
+    //   DELETE /tasks/{id}
+
+    const list = document.getElementById("list");
+    const errorEl = document.getElementById("error");
+
+    async function load() {
+      const res = await fetch("/tasks");
+      if (!res.ok) { errorEl.textContent = "Ошибка загрузки: " + res.status; return; }
+      errorEl.textContent = "";
+      const tasks = (await res.json()) || [];
+
+      list.innerHTML = "";
+      for (const t of tasks) {
+        const li = document.createElement("li");
+        if (t.status) li.className = "done";
+
+        const box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = t.status;
+        box.style.display = "inline";
+        box.style.width = "auto";
+        box.onchange = () => toggle(t.id, box.checked);
+
+        const title = document.createElement("span");
+        title.className = "title";
+        title.textContent = " " + t.title + " ";
+
+        const del = document.createElement("button");
+        del.textContent = "Удалить";
+        del.onclick = () => remove(t.id);
+
+        li.append(box, title, del);
+
+        if (t.message) {
+          const msg = document.createElement("div");
+          msg.className = "message";
+          msg.textContent = t.message;
+          li.append(msg);
+        }
+        list.append(li);
+      }
+    }
+
+    async function send(url, method, body) {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (!res.ok) errorEl.textContent = method + " " + url + ": " + res.status;
+      await load();
+    }
+
+    const toggle = (id, status) => send("/tasks/" + id, "PATCH", { status });
+    const remove = (id) => send("/tasks/" + id, "DELETE");
+
+    document.getElementById("add").onclick = async () => {
+      const title = document.getElementById("title").value.trim();
+      const message = document.getElementById("message").value.trim();
+      if (!title) return;
+      document.getElementById("title").value = "";
+      document.getElementById("message").value = "";
+      await send("/tasks", "POST", { title, message });
+    };
+
+    load();
+  </script>
+</body>
+</html>
