@@ -4,14 +4,35 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 )
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
 	var newTask Task
 
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	err := json.NewDecoder(r.Body).Decode(&newTask)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	newTask.Title = strings.TrimSpace(newTask.Title)
+	newTask.Message = strings.TrimSpace(newTask.Message)
+
+	if newTask.Title == "" {
+		http.Error(w, "Title is empty", http.StatusBadRequest)
+		return
+	}
+
+	if utf8.RuneCountInString(newTask.Title) > MaxTitleLen {
+		http.Error(w, "Title is too long", http.StatusBadRequest)
+		return
+	}
+
+	if utf8.RuneCountInString(newTask.Message) > MaxMessageLen {
+		http.Error(w, "Message is too long", http.StatusBadRequest)
 		return
 	}
 
@@ -36,6 +57,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 
 func ReworkTask(w http.ResponseWriter, r *http.Request) {
 	var newStatus TaskStatus
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	err := json.NewDecoder(r.Body).Decode(&newStatus)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)

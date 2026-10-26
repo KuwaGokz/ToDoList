@@ -18,6 +18,11 @@ type TaskStatus struct {
 	Status bool `json:"status"`
 }
 
+const (
+	MaxTitleLen   = 120
+	MaxMessageLen = 640
+)
+
 var Tasks = []Task{}
 var mu sync.Mutex
 var nextID = 1
