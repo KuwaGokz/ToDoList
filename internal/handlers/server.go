@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 type Task struct {
@@ -25,8 +26,12 @@ func Server() {
 	mux := http.NewServeMux()
 
 	server := &http.Server{
-		Handler: mux,
-		Addr:    "127.0.0.1:8080",
+		Handler:           mux,
+		Addr:              "127.0.0.1:8080",
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	mux.HandleFunc("/", BasicPage)
