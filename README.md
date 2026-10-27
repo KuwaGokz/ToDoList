@@ -44,5 +44,5 @@ CRUD over JSON:
 ## Roadmap
 
 - [ ] Persistent storage (JSON file, then SQLite)
-- [ ] Server-side validation, request size limit, server timeouts
+- [+] Server-side validation, request size limit, server timeouts
 - [ ] Tests
