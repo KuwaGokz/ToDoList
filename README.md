@@ -37,7 +37,7 @@ CRUD over JSON:
 
 ## Notes
 
-- Tasks are stored in a slice in memory, so **all data is lost on restart**.
+- Tasks are stored in a slice and json file
 - A mutex protects the slice from concurrent access.
 - The server listens on localhost only. There is no authentication, no HTTPS and only minimal validation. This is a learning project.
 
