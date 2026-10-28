@@ -28,6 +28,8 @@ var mu sync.Mutex
 var nextID = 1
 
 func Server() {
+	loadTasks()
+
 	mux := http.NewServeMux()
 
 	server := &http.Server{
