@@ -44,7 +44,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 
 	if err := saveTasks(); err != nil {
 		mu.Unlock()
-		http.Error(w, "Task saving is failed", 500)
+		http.Error(w, "Task saving failed", http.StatusInternalServerError)
 		return
 	}
 	mu.Unlock()
@@ -83,7 +83,7 @@ func ReworkTask(w http.ResponseWriter, r *http.Request) {
 		if Tasks[i].ID == id {
 			Tasks[i].Status = newStatus.Status
 			if err := saveTasks(); err != nil {
-				http.Error(w, "task saving if failed", 500)
+				http.Error(w, "task saving failed", http.StatusInternalServerError)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
@@ -108,7 +108,7 @@ func DelTask(w http.ResponseWriter, r *http.Request) {
 		if Tasks[i].ID == id {
 			Tasks = append(Tasks[:i], Tasks[i+1:]...)
 			if err := saveTasks(); err != nil {
-				http.Error(w, "Task saving is failed", 500)
+				http.Error(w, "Task saving failed", http.StatusInternalServerError)
 			}
 			w.WriteHeader(http.StatusNoContent)
 			return
