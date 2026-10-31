@@ -7,16 +7,18 @@ import (
 	"os"
 )
 
+var dataFile = "tasksList.json"
+
 func saveTasks() error {
 	jsonTaskList, err := json.MarshalIndent(Tasks, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile("tasksList.json", jsonTaskList, 0644)
+	return os.WriteFile(dataFile, jsonTaskList, 0644)
 }
 
 func loadTasks() {
-	tasksData, err := os.ReadFile("tasksList.json")
+	tasksData, err := os.ReadFile(dataFile)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return
