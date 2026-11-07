@@ -178,3 +178,55 @@ func TestCreateTask_MessageTooLong(t *testing.T) {
 		t.Fatalf("expected 0 tasks, got %d", len(Tasks))
 	}
 }
+
+func TestGetTask_Empty(t *testing.T) {
+	resetTData(t)
+
+	rec := doRequest(GetTask, "GET", "/tasks", "", "")
+
+	var got []Task
+	err := json.NewDecoder(rec.Body).Decode(&got)
+	if err != nil {
+		t.Fatalf("cannot decode response: %v", err)
+	}
+	if got == nil {
+		t.Fatal("expected empty array, got null")
+	}
+	if len(got) != 0 {
+		t.Fatalf("expected 0 tasks, got %d", len(got))
+	}
+}
+
+func TestGetTask_List(t *testing.T) {
+	resetTData(t)
+
+	Tasks = []Task{{ID: 1, Title: "a"}, {ID: 2, Title: "b"}, {ID: 3, Title: "c"}}
+
+	rec := doRequest(GetTask, "GET", "/tasks", "", "")
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	var got []Task
+	err := json.NewDecoder(rec.Body).Decode(&got)
+	if err != nil {
+		t.Fatalf("cannot decode respone %v", err)
+	}
+
+	if len(got) != 3 {
+		t.Fatalf("expected 3 tasks, got %d", len(got))
+	}
+
+	if got[0].Title != "a" {
+		t.Fatalf("expected a")
+	}
+
+	if got[1].Title != "b" {
+		t.Fatalf("expected b")
+	}
+
+	if got[2].Title != "c" {
+		t.Fatalf("expected c")
+	}
+}
