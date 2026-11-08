@@ -230,3 +230,83 @@ func TestGetTask_List(t *testing.T) {
 		t.Fatalf("expected c")
 	}
 }
+
+func TestReworkTask_SetDone(t *testing.T) {
+	resetTData(t)
+
+	Tasks = []Task{{ID: 1, Title: "a"}}
+
+	rec := doRequest(ReworkTask, "PATCH", "/tasks/1", `{"status":true}`, "1")
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	if Tasks[0].Status != true {
+		t.Fatalf("expected status true, got %v", Tasks[0].Status)
+	}
+}
+
+func TestReworkTask_KeepsOtherFields(t *testing.T) {
+	resetTData(t)
+
+	Tasks = []Task{{ID: 1, Title: "a", Message: "b", Status: false}}
+
+	rec := doRequest(ReworkTask, "PATCH", "/tasks/1", `{"status":true}`, "1")
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	if Tasks[0].Status != true {
+		t.Fatalf("expected true, got %v", Tasks[0].Status)
+	}
+
+	if Tasks[0].Title != "a" {
+		t.Fatalf("expected a, got %v", Tasks[0].Title)
+	}
+
+	if Tasks[0].Message != "b" {
+		t.Fatalf("expected b, got %v", Tasks[0].Message)
+	}
+}
+
+func TestReworkTask_NotFound(t *testing.T) {
+	resetTData(t)
+
+	Tasks = []Task{{ID: 1, Title: "a", Message: "b", Status: false}}
+
+	rec := doRequest(ReworkTask, "PATCH", "/tasks/1", `{"status":true}`, "943")
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rec.Code)
+	}
+
+	if Tasks[0].Status == true {
+		t.Fatalf("expected false, got %v", Tasks[0].Status)
+	}
+}
+
+func TestDelTask_RemovesCorrectOne(t *testing.T) {
+	resetTData(t)
+
+	Tasks = []Task{{ID: 1, Title: "a"}, {ID: 2, Title: "b"}, {ID: 3, Title: "c"}}
+
+	rec := doRequest(DelTask, "DELETE", "/tasks/2", "", "2")
+
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d", rec.Code)
+	}
+
+	if len(Tasks) != 2 {
+		t.Fatalf("expected >2, got %v", Tasks)
+	}
+
+	if Tasks[0].ID != 1 {
+		t.Fatalf("expected Tasks[0].ID 1, got %d", Tasks[0].ID)
+	}
+
+	if Tasks[1].ID != 3 {
+		t.Fatalf("expected Tasks[1].ID 3, got %d", Tasks[1].ID)
+	}
+}
