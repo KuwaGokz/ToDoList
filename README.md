@@ -45,5 +45,5 @@ CRUD over JSON:
 
 - [+] Persistent storage (JSON file)
 - [+] Server-side validation, request size limit, server timeouts
-- [ ] Tests
+- [+] Tests
 - [ ] Postgress
